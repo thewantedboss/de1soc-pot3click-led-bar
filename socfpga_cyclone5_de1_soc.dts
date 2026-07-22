@@ -1,0 +1,178 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2013 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+ */
+
+#include "socfpga_cyclone5.dtsi"
+
+/ {
+	model = "Terasic DE1-SoC";
+	compatible = "terasic,socfpga-cyclone5-sockit", "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		bootargs = "earlyprintk";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x40000000>; /* 1GB */
+	};
+
+	aliases {
+		/* this allow the ethaddr uboot environmnet variable contents
+		 * to be added to the gmac1 device tree blob.
+		 */
+		ethernet0 = &gmac1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		hps_led {
+			label = "hps_led";
+			gpios = <&portb 24 0>;	/* HPS_GPIO53 */
+			linux,default-trigger = "heartbeat";
+		};
+
+		fpga_led0 {
+			label = "fpga_led0";
+			gpios = <&gpio_fpga 0 0>;
+		};
+		
+		fpga_led1 {
+			label = "fpga_led1";
+			gpios = <&gpio_fpga 1 0>;
+		};
+		
+		fpga_led2 {
+			label = "fpga_led2";
+			gpios = <&gpio_fpga 2 0>;
+		};
+		
+		fpga_led3 {
+			label = "fpga_led3";
+			gpios = <&gpio_fpga 3 0>;
+		};
+		
+		fpga_led4 {
+			label = "fpga_led4";
+			gpios = <&gpio_fpga 4 0>;
+		};
+		
+		fpga_led5 {
+			label = "fpga_led5";
+			gpios = <&gpio_fpga 5 0>;
+		};
+		
+		fpga_led6 {
+			label = "fpga_led6";
+			gpios = <&gpio_fpga 6 0>;
+		};
+		
+		fpga_led7 {
+			label = "fpga_led7";
+			gpios = <&gpio_fpga 7 0>;
+		};
+		
+		fpga_led8 {
+			label = "fpga_led8";
+			gpios = <&gpio_fpga 8 0>;
+		};
+		
+		fpga_led9 {
+			label = "fpga_led9";
+			gpios = <&gpio_fpga 9 0>;
+		};
+
+	};
+	soc {
+		gpio_fpga: gpio@ff200070 {
+			compatible = "altr,pio-1.0";
+			reg = <0xff200070 0x10>;
+			altr,ngpio = <10>;
+			#gpio-cells = <2>;
+			gpio-controller;
+			status = "okay";
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		hps_hkey {
+			label = "hps_hkey";
+			gpios = <&portb 25 0>;	/* HPS_GPI8 */
+			linux,code = <16>;	/* KEY_F17 */
+		};
+	};
+
+	regulator_3_3v: regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "VCC3P3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+};
+
+&gmac1 {
+	status = "okay";
+	phy-mode = "rgmii";
+
+	rxd0-skew-ps = <0>;
+	rxd1-skew-ps = <0>;
+	rxd2-skew-ps = <0>;
+	rxd3-skew-ps = <0>;
+	txen-skew-ps = <0>;
+	txc-skew-ps = <2600>;
+	rxdv-skew-ps = <0>;
+	rxc-skew-ps = <2000>;
+};
+
+&gpio0 {	/* GPIO 0..29 */
+	status = "okay";
+};
+
+&gpio1 {	/* GPIO 30..57 */
+	status = "okay";
+};
+
+&gpio2 {	/* GPIO 58..66 (HLGPI 0..13 at offset 13) */
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	accel1: accelerometer@53 {
+		compatible = "adi,adxl345";
+		reg = <0x53>;
+
+		interrupt-parent = <&portc>;
+		interrupts = <3 2>;
+	};
+};
+&spi0 {
+        status = "okay";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        num-cs = <1>;
+
+        pot3_click: adc@0 {
+              compatible = "microchip,mcp3201";
+              reg = <0>;
+              spi-max-frequency = <1000000>;
+              vref-supply = <&regulator_3_3v>;
+        };
+};
+&mmc0 {
+	vmmc-supply = <&regulator_3_3v>;
+	vqmmc-supply = <&regulator_3_3v>;
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
+};
